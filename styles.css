@@ -1,0 +1,12 @@
+button:active {
+    border: 2px solid #A6C7FF;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+#result {
+    font-size: 15px;
+    font-family: monospace;
+}
