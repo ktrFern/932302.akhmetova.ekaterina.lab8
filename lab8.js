@@ -1,4 +1,4 @@
-const entries = new Set();
+const entries = [];
 const entriesBlock = document.getElementById('items');
 const addBtn = document.getElementById('add-item');
 const saveBtn = document.getElementById('save-item');
@@ -9,87 +9,68 @@ function renderEntries() {
 	entries.forEach(({ key, value, id }) => {
 		const row = document.createElement('div');
 		row.dataset.id = id;
-
 		const keyField = document.createElement('input');
-		keyField.name = id;
 		keyField.value = key;
-		keyField.addEventListener('change', e => {
-			updateEntry(e.target.name, e.target.value);
+		keyField.addEventListener('input', e => {
+			updateEntry(id, e.target.value, undefined);
 		});
-
 		const valueField = document.createElement('input');
-		valueField.name = id;
 		valueField.value = value;
-		valueField.addEventListener('change', e => {
-			updateEntry(e.target.name, undefined, e.target.value);
+		valueField.addEventListener('input', e => {
+			updateEntry(id, undefined, e.target.value);
 		});
-
 		const upBtn = document.createElement('button');
 		upBtn.innerHTML = '&uarr;';
 		upBtn.addEventListener('click', () => moveEntryUp(id));
-
 		const downBtn = document.createElement('button');
 		downBtn.innerHTML = '&darr;';
 		downBtn.addEventListener('click', () => moveEntryDown(id));
-
 		const deleteBtn = document.createElement('button');
 		deleteBtn.innerHTML = '&#215;';
 		deleteBtn.addEventListener('click', () => removeEntry(id));
-
 		row.append(keyField, valueField, upBtn, downBtn, deleteBtn);
 		entriesBlock.appendChild(row);
 	});
 }
 
 function addEntry() {
-	const id = entries.size;
-	entries.add({ key: '', value: '', id });
+	let id = 0;
+	for (const e of entries) {
+		if (e.id >= id) id = e.id + 1;
+	}
+	entries.push({ key: '', value: '', id });
 	renderEntries();
 }
 
 function updateEntry(entryId, newKey = undefined, newValue = undefined) {
-	for (const entry of entries) {
-		if (entry.id == entryId) {
-			if (newKey !== undefined) entry.key = newKey;
-			if (newValue !== undefined) entry.value = newValue;
-		}
-	}
+	const entry = entries.find(e => e.id === entryId);
+	if (!entry) return;
+	if (newKey !== undefined) entry.key = newKey;
+	if (newValue !== undefined) entry.value = newValue;
 }
 
 function removeEntry(entryId) {
-	for (const entry of entries) {
-		if (entry.id == entryId) {
-			entries.delete(entry);
-			break;
-		}
+	const index = entries.findIndex(e => e.id === entryId);
+	if (index !== -1) {
+		entries.splice(index, 1);
 	}
 	renderEntries();
 }
 
 function moveEntryUp(entryId) {
-	const list = Array.from(entries);
-	for (let i = 0; i < list.length; i++) {
-		if (list[i].id == entryId && i > 0) {
-			[list[i - 1], list[i]] = [list[i], list[i - 1]];
-			break;
-		}
+	const i = entries.findIndex(e => e.id === entryId);
+	if (i > 0) {
+		[entries[i - 1], entries[i]] = [entries[i], entries[i - 1]];
+		renderEntries();
 	}
-	entries.clear();
-	list.forEach(el => entries.add(el));
-	renderEntries();
 }
 
 function moveEntryDown(entryId) {
-	const list = Array.from(entries);
-	for (let i = 0; i < list.length; i++) {
-		if (list[i].id == entryId && i < list.length - 1) {
-			[list[i + 1], list[i]] = [list[i], list[i + 1]];
-			break;
-		}
+	const i = entries.findIndex(e => e.id === entryId);
+	if (i < entries.length - 1) {
+		[entries[i + 1], entries[i]] = [entries[i], entries[i + 1]];
+		renderEntries();
 	}
-	entries.clear();
-	list.forEach(el => entries.add(el));
-	renderEntries();
 }
 
 function showResult() {
